@@ -1,6 +1,6 @@
-# [Project name]
+# CFAP — Crypto Fraud Attribution Platform
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+CFAP is a role-aware evidence workspace for tracing crypto fraud, coordinating VASP freeze requests, and preserving court-ready chain-of-custody records.
 
 ## Run & Operate
 
@@ -22,23 +22,32 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/cfap-platform/` — the deployable React + Vite frontend and product UI.
+- `artifacts/api-server/` — shared Express server and Clerk production proxy.
+- `artifacts/cfap-platform/src/App.tsx` — role-aware portal routes, seeded demo data, and Clerk route wiring.
+- `artifacts/cfap-platform/src/index.css` — CFAP visual tokens, font imports, motion, and responsive layout rules.
+- `artifacts/cfap-platform/public/logo.svg` — branded CFAP mark used by the app and Clerk screens.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The public home route remains accessible to signed-out visitors; authenticated users enter through the role-aware portal.
+- Clerk owns browser auth/session transport; the frontend never stores or manually passes auth tokens.
+- The six operating personas are modeled as distinct workspace modes so the UI can express different responsibilities instead of hiding everything behind one generic dashboard.
+- The first build uses realistic in-browser seeded data and client state to make the frontend demonstrable before backend case APIs are connected.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+CFAP connects complaint intake, blockchain tracing, explainable risk scoring, supervisor approval, VASP response workflows, national coordination, operations health, and audit certification in one calm evidence room. It includes dedicated experiences for investigating officers, supervisors, national admins, VASP compliance teams, platform admins, and auditors.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Use the palette anchors `#8B9A6E`, `#F7F2EB`, `#EAE2D6`, and `#EEEEEE`.
+- Keep the interface polished, warm, responsive, and motion-rich without looking like a generic AI-generated admin template.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Clerk’s `SignIn` and `SignUp` routes must retain the exact `/*?` wildcard paths for OAuth callbacks.
+- The Clerk proxy middleware must stay mounted before Express body parsing and is intentionally a no-op in development.
 
 ## Pointers
 
