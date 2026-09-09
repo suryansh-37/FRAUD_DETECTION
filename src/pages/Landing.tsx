@@ -1,6 +1,7 @@
 import { Link } from 'wouter';
 import { ChevronDown, Network, LockKeyhole, ClipboardCheck } from 'lucide-react';
 import { Logo } from '../components/shared/Logo';
+import { HeroTraceVisualizer } from '../components/features/HeroTraceVisualizer';
 
 export function Landing() {
   return (
@@ -31,7 +32,7 @@ export function Landing() {
               assets, moving faster on freezes, and explaining every decision in plain language.
             </p>
             <div style={{ display: 'flex', gap: 10, marginTop: 28, flexWrap: 'wrap' }}>
-              <Link href="/sign-up" className="btn btn-primary" data-testid="button-landing-access">
+              <Link href="/sign-in" className="btn btn-primary" data-testid="button-landing-access">
                 Enter the evidence room <ChevronDown size={15} style={{ transform: 'rotate(-90deg)' }} />
               </Link>
               <a href="#method" className="btn btn-ghost" data-testid="link-learn-method">
@@ -47,34 +48,8 @@ export function Landing() {
             </div>
           </div>
 
-          <div className="hero-art animate-rise delay-1">
-            <div className="art-grid">
-              <div className="art-copy">
-                <div className="eyebrow" style={{ color: 'hsl(var(--sidebar-foreground)/.55)' }}>
-                  Trace / CF-24-0198
-                </div>
-                <h3>A clear path from report to freeze.</h3>
-                <p
-                  style={{
-                    fontSize: 12,
-                    color: 'hsl(var(--sidebar-foreground)/.62)',
-                    maxWidth: 250,
-                    lineHeight: 1.5,
-                  }}
-                >
-                  Six hops resolved · one notice ready for review.
-                </p>
-                <div style={{ marginTop: 70, display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <span className="badge badge-high">Risk signal</span>
-                  <span className="mono" style={{ color: 'hsl(var(--sidebar-foreground)/.48)' }}>
-                    ₹2,84,700
-                  </span>
-                </div>
-              </div>
-              <div className="art-node" style={{ left: '20%', top: '62%' }} />
-              <div className="art-node" style={{ left: '52%', top: '33%', background: 'hsl(38 30% 95%)' }} />
-              <div className="art-node" style={{ left: '72%', top: '62%', background: 'hsl(31 68% 56%)' }} />
-            </div>
+          <div className="hero-art animate-rise delay-1" style={{ padding: 0, overflow: 'hidden', border: 'none', background: 'transparent' }}>
+            <HeroTraceVisualizer />
           </div>
         </div>
       </section>

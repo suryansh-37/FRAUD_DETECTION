@@ -4,6 +4,8 @@ import { Route, Router as WouterRouter, Switch, Redirect } from 'wouter';
 
 import { basePath } from './services/blockchain';
 import { clerkPubKey, clerkProxyUrl, appearance } from './config/clerk';
+import { AuthProvider } from './context/AuthContext';
+import { StoreProvider } from './context/StoreContext';
 
 import { Landing } from './pages/Landing';
 import { Overview } from './pages/Overview';
@@ -22,6 +24,12 @@ import { Audit } from './pages/Audit';
 import { Settings } from './pages/Settings';
 import { DemoSignIn, DemoSignUp } from './pages/DemoAuth';
 import { NotFound } from './pages/NotFound';
+
+import { VictimPortal } from './pages/victim/VictimPortal';
+import { VictimReportFraud } from './pages/victim/VictimReportFraud';
+import { VictimTrackStatus } from './pages/victim/VictimTrackStatus';
+import { AdminUsers } from './pages/admin/AdminUsers';
+import { AdminMonitoring } from './pages/admin/AdminMonitoring';
 
 function AuthGate({ children }: { children: ReactNode }) {
   return (
@@ -64,6 +72,17 @@ function DemoRoutes() {
       <Route path="/" component={Landing} />
       <Route path="/sign-in/*?" component={DemoSignIn} />
       <Route path="/sign-up/*?" component={DemoSignUp} />
+
+      {/* Citizen / Victim Routes */}
+      <Route path="/victim" component={VictimPortal} />
+      <Route path="/victim/report" component={VictimReportFraud} />
+      <Route path="/victim/track" component={VictimTrackStatus} />
+
+      {/* Admin Routes */}
+      <Route path="/admin" component={AdminMonitoring} />
+      <Route path="/admin/monitoring" component={AdminMonitoring} />
+      <Route path="/admin/users" component={AdminUsers} />
+
       <Route path="/portal">
         <ProtectedRoutes />
       </Route>
@@ -126,6 +145,17 @@ function ClerkRoutes() {
           </div>
         )}
       />
+
+      {/* Citizen / Victim Routes in Clerk mode */}
+      <Route path="/victim" component={VictimPortal} />
+      <Route path="/victim/report" component={VictimReportFraud} />
+      <Route path="/victim/track" component={VictimTrackStatus} />
+
+      {/* Admin Routes in Clerk mode */}
+      <Route path="/admin" component={AdminMonitoring} />
+      <Route path="/admin/monitoring" component={AdminMonitoring} />
+      <Route path="/admin/users" component={AdminUsers} />
+
       <Route
         path="/portal/*?"
         component={() => (
@@ -140,24 +170,30 @@ function ClerkRoutes() {
 }
 
 export function App() {
-  return clerkPubKey ? (
-    <ClerkProvider
-      publishableKey={clerkPubKey}
-      proxyUrl={clerkProxyUrl}
-      appearance={appearance}
-      signInUrl={`${basePath}/sign-in`}
-      signUpUrl={`${basePath}/sign-up`}
-      routerPush={(path) => window.history.pushState({}, '', path)}
-      routerReplace={(path) => window.history.replaceState({}, '', path)}
-    >
-      <WouterRouter base={basePath}>
-        <ClerkRoutes />
-      </WouterRouter>
-    </ClerkProvider>
-  ) : (
-    <WouterRouter base={basePath}>
-      <DemoRoutes />
-    </WouterRouter>
+  return (
+    <AuthProvider>
+      <StoreProvider>
+        {clerkPubKey ? (
+          <ClerkProvider
+            publishableKey={clerkPubKey}
+            proxyUrl={clerkProxyUrl}
+            appearance={appearance}
+            signInUrl={`${basePath}/sign-in`}
+            signUpUrl={`${basePath}/sign-up`}
+            routerPush={(path) => window.history.pushState({}, '', path)}
+            routerReplace={(path) => window.history.replaceState({}, '', path)}
+          >
+            <WouterRouter base={basePath}>
+              <ClerkRoutes />
+            </WouterRouter>
+          </ClerkProvider>
+        ) : (
+          <WouterRouter base={basePath}>
+            <DemoRoutes />
+          </WouterRouter>
+        )}
+      </StoreProvider>
+    </AuthProvider>
   );
 }
 

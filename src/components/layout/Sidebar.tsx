@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import {
   LayoutDashboard,
@@ -15,106 +15,158 @@ import {
   ShieldCheck,
   Settings,
   ChevronDown,
+  ShieldAlert,
+  Search,
+  Activity,
+  PlusCircle,
+  PhoneCall,
 } from 'lucide-react';
-import type { Role } from '../../types';
-import { roles } from '../../data/mockData';
 import { Logo } from '../shared/Logo';
+import { useAuth, UserRole } from '../../context/AuthContext';
 
-export function Sidebar({ role, setRole }: { role: Role; setRole: (role: Role) => void }) {
-  const [location] = useLocation();
+export function Sidebar({ role, setRole }: { role?: any; setRole?: (role: any) => void }) {
+  const [location, setLocation] = useLocation();
+  const { currentUser, loginAs } = useAuth();
   const [openRole, setOpenRole] = useState(false);
 
-  const links = [
-    { href: '/portal', label: 'Overview', icon: LayoutDashboard },
-    { href: '/portal/complaints', label: 'Complaint intake', icon: FileText },
-    { href: '/portal/investigate', label: 'Investigate wallet', icon: ScanSearch },
-    { href: '/portal/alerts', label: 'Alerts', icon: TriangleAlert },
-    { href: '/portal/cases', label: 'Case register', icon: FileSearch },
-    { href: '/portal/reports', label: 'Case reports', icon: ClipboardCheck },
-    { href: '/portal/handoffs', label: 'Investigator / LEA', icon: Users },
-    { href: '/portal/approvals', label: 'Approvals', icon: ClipboardCheck },
-    { href: '/portal/coordination', label: 'Coordination', icon: Globe2 },
-    { href: '/portal/vault', label: 'VASP vault', icon: WalletCards },
-    { href: '/portal/integrations', label: 'NCRP · SAHYOG', icon: DatabaseZap },
-  ];
+  // Dynamic Navigation Links based on active role
+  const getNavSections = () => {
+    if (currentUser.role === 'victim') {
+      return [
+        {
+          label: 'Citizen Portal',
+          links: [
+            { href: '/victim', label: 'Citizen Home', icon: LayoutDashboard },
+            { href: '/victim/report', label: 'Report Fraud', icon: PlusCircle },
+            { href: '/victim/track', label: 'Track Status', icon: Search },
+          ],
+        },
+        {
+          label: 'National Grid',
+          links: [
+            { href: '/portal/vault', label: 'VASP Directory', icon: WalletCards },
+          ],
+        },
+      ];
+    }
+
+    if (currentUser.role === 'admin') {
+      return [
+        {
+          label: 'Control Center',
+          links: [
+            { href: '/admin/monitoring', label: 'System Monitoring', icon: Activity },
+            { href: '/admin/users', label: 'User Management', icon: Users },
+          ],
+        },
+        {
+          label: 'Governance',
+          links: [
+            { href: '/portal/operations', label: 'Node Operations', icon: SlidersHorizontal },
+            { href: '/portal/audit', label: 'Security Audit', icon: ShieldCheck },
+            { href: '/portal/settings', label: 'Settings', icon: Settings },
+          ],
+        },
+      ];
+    }
+
+    // Default: Investigator role
+    return [
+      {
+        label: 'Forensic Workspace',
+        links: [
+          { href: '/portal', label: 'Overview', icon: LayoutDashboard },
+          { href: '/portal/investigate', label: 'Investigate wallet', icon: ScanSearch },
+          { href: '/portal/cases', label: 'Case register', icon: FileSearch },
+          { href: '/portal/complaints', label: 'Citizen complaints', icon: FileText },
+          { href: '/portal/alerts', label: 'Alerts', icon: TriangleAlert },
+          { href: '/portal/reports', label: 'Case reports', icon: ClipboardCheck },
+          { href: '/portal/approvals', label: 'Approvals', icon: ClipboardCheck, badge: 6 },
+          { href: '/portal/vault', label: 'VASP vault', icon: WalletCards },
+        ],
+      },
+      {
+        label: 'Governance',
+        links: [
+          { href: '/portal/coordination', label: 'Coordination', icon: Globe2 },
+          { href: '/portal/operations', label: 'Operations', icon: SlidersHorizontal },
+          { href: '/portal/audit', label: 'Audit review', icon: ShieldCheck },
+        ],
+      },
+    ];
+  };
+
+  const sections = getNavSections();
+
+  const handleSwitchPersona = (targetRole: UserRole, targetUrl: string) => {
+    loginAs(targetRole);
+    setOpenRole(false);
+    setLocation(targetUrl);
+  };
 
   return (
     <aside className="cfap-sidebar">
       <Logo dark />
-      <div className="nav-label">Workspace</div>
-      {links.map((item) => {
-        const Icon = item.icon;
-        const isActive =
-          location === item.href || (item.href !== '/portal' && location.startsWith(item.href));
-        return (
-          <Link
-            href={item.href}
-            key={item.href}
-            className={`nav-item ${isActive ? 'active' : ''}`}
-            data-testid={`link-nav-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
-          >
-            <Icon size={16} />
-            {item.label}
-            {item.label === 'Approvals' && (
-              <span style={{ marginLeft: 'auto', fontSize: 10, color: 'hsl(var(--sidebar-primary))' }}>
-                6
-              </span>
-            )}
-          </Link>
-        );
-      })}
 
-      <div className="nav-label">Governance</div>
-      <Link
-        href="/portal/operations"
-        className={`nav-item ${location.startsWith('/portal/operations') ? 'active' : ''}`}
-        data-testid="link-nav-operations"
-      >
-        <SlidersHorizontal size={16} />
-        Operations
-      </Link>
-      <Link
-        href="/portal/audit"
-        className={`nav-item ${location.startsWith('/portal/audit') ? 'active' : ''}`}
-        data-testid="link-nav-audit"
-      >
-        <ShieldCheck size={16} />
-        Audit review
-      </Link>
-      <Link
-        href="/portal/settings"
-        className={`nav-item ${location.startsWith('/portal/settings') ? 'active' : ''}`}
-        data-testid="link-nav-settings"
-      >
-        <Settings size={16} />
-        Settings
-      </Link>
+      {sections.map((sec, idx) => (
+        <React.Fragment key={idx}>
+          <div className="nav-label">{sec.label}</div>
+          {sec.links.map((item) => {
+            const Icon = item.icon;
+            const isActive =
+              location === item.href ||
+              (item.href !== '/portal' && item.href !== '/victim' && location.startsWith(item.href));
 
-      <div style={{ marginTop: 'auto', position: 'relative' }}>
+            return (
+              <Link
+                href={item.href}
+                key={item.href}
+                className={`nav-item ${isActive ? 'active' : ''}`}
+              >
+                <Icon size={16} />
+                {item.label}
+                {item.badge && (
+                  <span style={{ marginLeft: 'auto', fontSize: 10, color: 'hsl(var(--sidebar-primary))' }}>
+                    {item.badge}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </React.Fragment>
+      ))}
+
+      {/* Profile & Switcher at bottom */}
+      <div style={{ marginTop: 'auto', position: 'relative', paddingTop: 14 }}>
         <button
+          type="button"
           className="nav-item"
           style={{ width: '100%', border: 0, background: 'transparent', textAlign: 'left' }}
           onClick={() => setOpenRole(!openRole)}
-          data-testid="button-role-switcher"
         >
           <span
             style={{
-              width: 27,
-              height: 27,
+              width: 28,
+              height: 28,
               borderRadius: 7,
-              background: role.accent,
-              color: 'hsl(var(--sidebar))',
+              background:
+                currentUser.role === 'admin'
+                  ? 'hsl(var(--accent))'
+                  : currentUser.role === 'victim'
+                  ? 'hsl(var(--destructive))'
+                  : 'hsl(157 24% 38%)',
+              color: '#fff',
               display: 'grid',
               placeItems: 'center',
               fontWeight: 700,
               fontSize: 11,
             }}
           >
-            AK
+            {currentUser.initials}
           </span>
           <span style={{ flex: 1, overflow: 'hidden' }}>
             <strong style={{ display: 'block', fontSize: 12, color: 'hsl(var(--sidebar-foreground))' }}>
-              Aarav Kulkarni
+              {currentUser.name}
             </strong>
             <small
               style={{
@@ -123,9 +175,10 @@ export function Sidebar({ role, setRole }: { role: Role; setRole: (role: Role) =
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                color: 'hsl(var(--sidebar-foreground)/.7)',
               }}
             >
-              {role.label}
+              {currentUser.title}
             </small>
           </span>
           <ChevronDown size={14} />
@@ -136,42 +189,80 @@ export function Sidebar({ role, setRole }: { role: Role; setRole: (role: Role) =
             className="panel"
             style={{
               position: 'absolute',
-              bottom: 55,
+              bottom: 58,
               left: 0,
-              width: 220,
+              width: 230,
               padding: 6,
-              zIndex: 20,
+              zIndex: 30,
               background: 'hsl(var(--sidebar))',
               color: 'hsl(var(--sidebar-foreground))',
               borderColor: 'hsl(var(--sidebar-border))',
+              boxShadow: 'var(--shadow-lg)',
             }}
           >
-            {roles.map((r) => (
-              <button
-                key={r.key}
-                onClick={() => {
-                  setRole(r);
-                  setOpenRole(false);
-                }}
-                data-testid={`button-role-${r.key}`}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  border: 0,
-                  background: 'transparent',
-                  textAlign: 'left',
-                  padding: '9px 8px',
-                  borderRadius: 5,
-                  color: 'inherit',
-                  fontSize: 11,
-                }}
-              >
-                <span style={{ display: 'block', fontWeight: 600 }}>{r.label}</span>
-                <span style={{ display: 'block', opacity: 0.58, fontSize: 10, marginTop: 2 }}>
-                  {r.description}
-                </span>
-              </button>
-            ))}
+            <div className="nav-label" style={{ margin: '4px 6px 8px', fontSize: 9 }}>
+              Switch Persona & Portal
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleSwitchPersona('victim', '/victim')}
+              style={{
+                display: 'block',
+                width: '100%',
+                border: 0,
+                background: currentUser.role === 'victim' ? 'hsl(var(--sidebar-accent))' : 'transparent',
+                textAlign: 'left',
+                padding: '8px',
+                borderRadius: 5,
+                color: 'inherit',
+                fontSize: 11,
+                cursor: 'pointer',
+              }}
+            >
+              <strong style={{ display: 'block' }}>🛡️ Citizen / Victim</strong>
+              <small style={{ display: 'block', opacity: 0.6, fontSize: 9 }}>Report fraud & track case</small>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSwitchPersona('investigator', '/portal/investigate')}
+              style={{
+                display: 'block',
+                width: '100%',
+                border: 0,
+                background: currentUser.role === 'investigator' ? 'hsl(var(--sidebar-accent))' : 'transparent',
+                textAlign: 'left',
+                padding: '8px',
+                borderRadius: 5,
+                color: 'inherit',
+                fontSize: 11,
+                cursor: 'pointer',
+              }}
+            >
+              <strong style={{ display: 'block' }}>🔍 Cyber Investigator</strong>
+              <small style={{ display: 'block', opacity: 0.6, fontSize: 9 }}>On-chain forensics & reports</small>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSwitchPersona('admin', '/admin/monitoring')}
+              style={{
+                display: 'block',
+                width: '100%',
+                border: 0,
+                background: currentUser.role === 'admin' ? 'hsl(var(--sidebar-accent))' : 'transparent',
+                textAlign: 'left',
+                padding: '8px',
+                borderRadius: 5,
+                color: 'inherit',
+                fontSize: 11,
+                cursor: 'pointer',
+              }}
+            >
+              <strong style={{ display: 'block' }}>⚙️ System Admin</strong>
+              <small style={{ display: 'block', opacity: 0.6, fontSize: 9 }}>RBAC users & RPC nodes</small>
+            </button>
           </div>
         )}
       </div>
