@@ -209,9 +209,9 @@ export function AdminMonitoring() {
           </div>
 
           <div style={{ display: 'grid', gap: 10, marginTop: 14, maxHeight: 320, overflowY: 'auto' }}>
-            {auditLogs.map((log) => (
+            {auditLogs.map((log, index) => (
               <div
-                key={log.id}
+                key={log.id || index}
                 style={{
                   padding: '10px 12px',
                   borderRadius: 6,
@@ -221,11 +221,11 @@ export function AdminMonitoring() {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <strong style={{ fontSize: 11 }}>{log.action}</strong>
+                  <strong style={{ fontSize: 11 }}>{log.action || log.label}</strong>
                   <span className="mono subtle" style={{ fontSize: 9 }}>{log.timestamp}</span>
                 </div>
                 <div className="subtle" style={{ marginTop: 3 }}>
-                  Actor: <span className="mono" style={{ color: 'hsl(var(--accent))' }}>{log.actor}</span> · Target: {log.caseId}
+                  Actor: <span className="mono" style={{ color: 'hsl(var(--accent))' }}>{log.actor || 'System'}</span> · Target: {log.caseId || 'SYSTEM'}
                 </div>
               </div>
             ))}

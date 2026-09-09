@@ -42,10 +42,14 @@ export type Notice = {
 };
 
 export type Activity = {
-  label: string;
+  id?: string;
+  label?: string;
+  action?: string;
   detail: string;
   timestamp: string;
-  kind: string;
+  kind?: string;
+  actor?: string;
+  caseId?: string;
 };
 
 export type Role = {

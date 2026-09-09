@@ -220,9 +220,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const newLog: Activity = {
       id: `act-${Date.now()}`,
       action,
+      label: action,
+      detail,
       caseId: 'SYSTEM',
       actor,
       timestamp: 'Just now',
+      kind: 'audit',
     };
     setAuditLogs((prev) => [newLog, ...prev]);
   };
